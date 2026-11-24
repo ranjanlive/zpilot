@@ -1,0 +1,8 @@
+{
+  "name": "hello_powershell",
+  "description": "Greet someone by name. A minimal PowerShell tool: use it to check that tools written in PowerShell work.",
+  "parameters": { "type": "object", "properties": { "name": { "type": "string" } }, "required": ["name"], "additionalProperties": false },
+  "command": ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "hello.ps1"],
+  "output": "json",
+  "platforms": ["windows"]
+}

@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>zagent — Durable, Provider-Neutral AI Agent Engine in Go</title>
+  <meta name="description" content="A durable, provider-neutral AI agent runtime written in Go with zero runtime dependencies. Append-only event logs, deterministic prefix caching, and multi-modal interfaces.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-primary: #0a0c10;
+      --bg-secondary: #11141b;
+      --bg-card: rgba(20, 24, 33, 0.7);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(56, 189, 248, 0.3);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --accent-glow: rgba(56, 189, 248, 0.15);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.15);
+      --purple: #a855f7;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 100% 40%, rgba(168, 85, 247, 0.05) 0%, transparent 40%),
+        linear-gradient(to bottom, transparent, rgba(10, 12, 16, 0.8));
+    }
+
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header & Navigation */
+    header {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(10, 12, 16, 0.85);
+    }
+
+    .nav-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--text-main);
+    }
+
+    .btn-github {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-secondary);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-github:hover {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.05);
+      transform: translateY(-1px);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--emerald);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 28px;
+    }
+
+    .pill-pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--emerald);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.9); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .hero-title {
+      font-size: 3.5rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-tagline {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 36px;
+      font-weight: 400;
+    }
+
+    /* Live Stats Bar */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    .stat-value {
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    /* CTA Buttons */
+    .cta-group {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 60px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent);
+      color: #041018;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(56, 189, 248, 0.35);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-secondary);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--border-hover);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    /* Terminal Showcase */
+    .terminal-wrapper {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      margin-bottom: 80px;
+      text-align: left;
+    }
+
+    .terminal-header {
+      background: #181d26;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+
+    .terminal-title {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-left: 12px;
+    }
+
+    .terminal-body {
+      padding: 24px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: #e2e8f0;
+      background: #0d1117;
+      overflow-x: auto;
+    }
+
+    .cmd-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .cmd-prompt { color: var(--accent); font-weight: 700; }
+    .cmd-text { color: #f8fafc; font-weight: 600; }
+    .cmd-comment { color: #64748b; }
+    .cmd-success { color: var(--emerald); }
+
+    /* Code Tabs Section */
+    .quickstart-section {
+      margin-bottom: 80px;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 36px;
+      font-size: 1.05rem;
+    }
+
+    .tabs-header {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 8px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .tab-content {
+      display: none;
+      background: #0d1117;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px 24px;
+      position: relative;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .code-box {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin-bottom: 80px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 30px;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      color: var(--accent);
+    }
+
+    .feature-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .feature-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* Downloads Table Section */
+    .downloads-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 40px;
+      margin-bottom: 80px;
+    }
+
+    .downloads-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .release-tag {
+      font-family: var(--font-mono);
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .downloads-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    .downloads-table th,
+    .downloads-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .downloads-table th {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-family: var(--font-mono);
+    }
+
+    .downloads-table td {
+      font-size: 0.95rem;
+    }
+
+    .file-name {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-os {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .btn-download-sm {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-download-sm:hover {
+      background: var(--accent);
+      color: #041018;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-color);
+      padding: 40px 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-main);
+    }
+
+    .footer-author {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    /* Live update status banner */
+    .sync-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--emerald);
+      margin-top: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero-title { font-size: 2.4rem; }
+      .downloads-section { padding: 24px 16px; }
+      .downloads-table th:nth-child(3),
+      .downloads-table td:nth-child(3) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header>
+    <div class="container nav-wrapper">
+      <a href="https://github.com/ranjanlive/zagent" class="brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        zagent
+        <span class="brand-badge" id="nav-version">v0.1.0</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#quickstart" class="nav-link">Quickstart</a>
+        <a href="#downloads" class="nav-link">Downloads</a>
+        <a href="https://github.com/ranjanlive/zagent" target="_blank" rel="noopener" class="btn-github">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="pill">
+        <span class="pill-pulse"></span>
+        <span id="pill-release-text">Live Release: v0.1.0 on GitHub</span>
+      </div>
+      <h1 class="hero-title">The Durable, Provider-Neutral<br>AI Agent Runtime in Go</h1>
+      <p class="hero-tagline">
+        Append-only event sourcing, deterministic prefix caching, multi-provider streaming, and single-binary zero-dependency execution.
+      </p>
+
+      <!-- Live Dynamic Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-pill">
+          <span>Stars:</span>
+          <span class="stat-value" id="stat-stars">0</span>
+        </div>
+        <div class="stat-pill">
+          <span>Release:</span>
+          <span class="stat-value" id="stat-version">v0.1.0</span>
+        </div>
+        <div class="stat-pill">
+          <span>Latest Commit:</span>
+          <span class="stat-value" id="stat-commit">...</span>
+        </div>
+        <div class="stat-pill">
+          <span>License:</span>
+          <span class="stat-value">Apache-2.0</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="cta-group">
+        <a id="btn-smart-download" href="https://github.com/ranjanlive/zagent/releases/latest" class="btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span id="smart-download-text">Download for Windows</span>
+        </a>
+        <a href="#quickstart" class="btn-secondary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+          Quickstart Guide
+        </a>
+      </div>
+
+      <!-- Interactive Simulated Terminal -->
+      <div class="terminal-wrapper">
+        <div class="terminal-header">
+          <div class="dot dot-red"></div>
+          <div class="dot dot-yellow"></div>
+          <div class="dot dot-green"></div>
+          <span class="terminal-title">zagent — bash / powershell</span>
+        </div>
+        <div class="terminal-body">
+          <div class="cmd-line">
+            <span class="cmd-prompt">&gt;</span>
+            <span class="cmd-text">zagent --session feature-audit -p "Analyze project files and prepare release notes"</span>
+          </div>
+          <div class="cmd-comment"># Engine initialized session 'feature-audit' (lock acquired via owner.lock)</div>
+          <div class="cmd-comment"># Context builder: cached prefix matched 4,120 tokens (100% KV cache hit)</div>
+          <div class="cmd-line">
+            <span class="cmd-success">✔ Model turn complete</span>
+            <span class="cmd-comment">· 3 tool calls executed · 0 HTTP 413 retries</span>
+          </div>
+          <div class="cmd-line">
+            <span class="cmd-prompt">&gt;</span>
+            <span class="cmd-text">zagent --session feature-audit --ui web</span>
+          </div>
+          <div class="cmd-comment"># Detached control server listening on 127.0.0.1:58432 (token authenticated)</div>
+          <div class="cmd-comment"># Opening dashboard in default browser...</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quickstart Tabs Section -->
+  <section id="quickstart" class="quickstart-section">
+    <div class="container">
+      <h2 class="section-title">Get Started in Seconds</h2>
+      <p class="section-subtitle">Choose your preferred installation or build method</p>
+
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchTab('powershell')">PowerShell (Windows)</button>
+        <button class="tab-btn" onclick="switchTab('bash')">Bash (Linux / macOS)</button>
+        <button class="tab-btn" onclick="switchTab('go')">Go Install</button>
+        <button class="tab-btn" onclick="switchTab('source')">Build from Source</button>
+      </div>
+
+      <!-- Tab: PowerShell -->
+      <div id="tab-powershell" class="tab-content active">
+        <button class="copy-btn" onclick="copyCode('code-ps')">Copy</button>
+        <div class="code-box" id="code-ps"># Download and run zagent on Windows
+Invoke-WebRequest -Uri "https://github.com/ranjanlive/zagent/releases/latest/download/zagent-0.1.0-windows-amd64.zip" -OutFile "zagent.zip"
+Expand-Archive -Path "zagent.zip" -DestinationPath "zagent"
+cd zagent\zagent-0.1.0-windows-amd64
+
+# Initialize agent home & configure .env
+.\zagent.exe init
+notepad .env
+
+# Verify and run
+.\zagent.exe doctor
+.\zagent.exe -p "Hello from zagent!"</div>
+      </div>
+
+      <!-- Tab: Bash -->
+      <div id="tab-bash" class="tab-content">
+        <button class="copy-btn" onclick="copyCode('code-bash')">Copy</button>
+        <div class="code-box" id="code-bash"># Download and extract on Linux / macOS
+curl -sSL -O "https://github.com/ranjanlive/zagent/releases/latest/download/zagent-0.1.0-linux-amd64.tar.gz"
+tar -xzf zagent-0.1.0-linux-amd64.tar.gz
+cd zagent-0.1.0-linux-amd64
+
+# Initialize agent home & configure .env
+./zagent init
+nano .env
+
+# Verify and run
+./zagent doctor
+./zagent --ui cli</div>
+      </div>
+
+      <!-- Tab: Go Install -->
+      <div id="tab-go" class="tab-content">
+        <button class="copy-btn" onclick="copyCode('code-go')">Copy</button>
+        <div class="code-box" id="code-go"># Install directly using Go (1.26+)
+go install github.com/ranjanlive/zagent/cmd/zagent@latest
+
+# Verify installation
+zagent version</div>
+      </div>
+
+      <!-- Tab: Source -->
+      <div id="tab-source" class="tab-content">
+        <button class="copy-btn" onclick="copyCode('code-source')">Copy</button>
+        <div class="code-box" id="code-source"># Clone the repository
+git clone https://github.com/ranjanlive/zagent.git
+cd zagent
+
+# Run tests & verify
+go test ./...
+go vet ./...
+
+# Build binary
+go build -trimpath -o zagent ./cmd/zagent</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section id="features" class="container">
+    <h2 class="section-title">Engine Architecture & Capabilities</h2>
+    <p class="section-subtitle">Designed for absolute resilience and high-performance local AI automation</p>
+
+    <div class="features-grid">
+      <!-- Feature 1 -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <h3 class="feature-title">Append-Only Event Log</h3>
+        <p class="feature-desc">Sessions are stored as immutable JSONL events paired with content-addressed SHA-256 binary blobs. State reconstruction is crash-proof and reproduces exact previous context.</p>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        </div>
+        <h3 class="feature-title">Deterministic Prefix Cache</h3>
+        <p class="feature-desc">Pure context builders with sorted-key serialization guarantee byte-identical renders. Each conversational turn strictly extends history at the tail, keeping remote KV cache hit rates near 100%.</p>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <h3 class="feature-title">Multi-Provider Streaming</h3>
+        <p class="feature-desc">First-class streaming adapters for Gemini, OpenAI-compatible (Ollama, vLLM, OpenRouter), Anthropic Messages, and custom gateways with thought-signature retention and token usage tracking.</p>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3 class="feature-title">OS-Level Concurrency & Locks</h3>
+        <p class="feature-desc">Single-writer session ownership is guarded by true operating system file locks (`owner.lock`). Process termination cleanly relinquishes claims without stale heartbeat leaks.</p>
+      </div>
+
+      <!-- Feature 5 -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <h3 class="feature-title">Strict Size & 413 Guards</h3>
+        <p class="feature-desc">Requests are sized pre-flight. When nearing body limits, aged tool attachments are pruned first, followed by intelligent compaction prompt generation, completely avoiding gateway 413 rejections.</p>
+      </div>
+
+      <!-- Feature 6 -->
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <h3 class="feature-title">Tri-Modal Interfaces</h3>
+        <p class="feature-desc">Headless execution, terminal Bubbletea TUI, and embedded web UI all connect to a single local control server over SSE. Closing an interface never interrupts a working agent.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live GitHub Releases & Downloads Section -->
+  <section id="downloads" class="container">
+    <div class="downloads-section">
+      <div class="downloads-header">
+        <div>
+          <h2 style="font-size:1.6rem; font-weight:800; margin-bottom:4px;">Official Release Binaries</h2>
+          <p style="color:var(--text-muted); font-size:0.9rem;" id="release-meta-text">Fetching latest assets from GitHub API...</p>
+        </div>
+        <div style="text-align:right;">
+          <span class="release-tag" id="table-version-tag">v0.1.0 Latest</span>
+          <div class="sync-status">
+            <span class="pill-pulse" style="width:6px; height:6px;"></span>
+            <span id="sync-label">Synced with GitHub</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="downloads-table">
+          <thead>
+            <tr>
+              <th>File / Package</th>
+              <th>Platform / Architecture</th>
+              <th>Size</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="assets-table-body">
+            <!-- Dynamically populated from GitHub API -->
+            <tr>
+              <td colspan="4" style="text-align:center; color:var(--text-muted); padding:30px;">Loading release assets from GitHub...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-links">
+        <a href="https://github.com/ranjanlive/zagent" target="_blank" rel="noopener">GitHub Repository</a>
+        <a href="https://github.com/ranjanlive/zagent/releases" target="_blank" rel="noopener">Releases</a>
+        <a href="https://github.com/ranjanlive/zagent/issues" target="_blank" rel="noopener">Issue Tracker</a>
+        <a href="https://github.com/ranjanlive/zagent/blob/main/LICENSE" target="_blank" rel="noopener">Apache-2.0 License</a>
+      </div>
+      <p class="footer-author">Created by <a href="https://github.com/ranjanlive" style="color:var(--accent); text-decoration:none;">Rajeev Ranjan (@ranjanlive)</a> · Built with Go 1.26+</p>
+    </div>
+  </footer>
+
+  <!-- Dynamic GitHub API Auto-Updater Script -->
+  <script>
+    const GITHUB_REPO = 'ranjanlive/zagent';
+    const FALLBACK_VERSION = 'v0.1.1';
+
+    // Switch code tabs
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (activeBtn) activeBtn.classList.add('active');
+      
+      const activeContent = document.getElementById('tab-' + tabId);
+      if (activeContent) activeContent.classList.add('active');
+    }
+
+    // Copy code snippet helper
+    function copyCode(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = 'Copied!';
+        setTimeout(() => { btn.innerText = originalText; }, 2000);
+      });
+    }
+
+    // Format bytes helper
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Parse platform information
+    function getPlatformMeta(name) {
+      if (name.includes('windows-amd64')) return { label: 'Windows x64', badge: 'win-amd64', icon: '🪟' };
+      if (name.includes('windows-arm64')) return { label: 'Windows ARM64', badge: 'win-arm64', icon: '🪟' };
+      if (name.includes('linux-amd64')) return { label: 'Linux x86_64', badge: 'linux-amd64', icon: '🐧' };
+      if (name.includes('linux-arm64')) return { label: 'Linux ARM64', badge: 'linux-arm64', icon: '🐧' };
+      if (name.includes('darwin-arm64')) return { label: 'macOS Apple Silicon', badge: 'mac-arm64', icon: '🍎' };
+      if (name.includes('darwin-amd64')) return { label: 'macOS Intel', badge: 'mac-amd64', icon: '🍎' };
+      if (name.includes('source')) return { label: 'Source Code (All Platforms)', badge: 'source', icon: '📦' };
+      if (name.includes('SHA256')) return { label: 'Cryptographic Checksums', badge: 'checksum', icon: '🔒' };
+      return { label: 'Universal', badge: 'binary', icon: '📁' };
+    }
+
+    // Detect user OS for smart download button
+    function setupSmartDownload(assets) {
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      let targetPattern = 'windows-amd64.zip';
+      let osName = 'Windows (x64)';
+
+      if (userAgent.indexOf('mac') !== -1) {
+        targetPattern = 'darwin-arm64.tar.gz';
+        osName = 'macOS (Apple Silicon)';
+      } else if (userAgent.indexOf('linux') !== -1) {
+        targetPattern = 'linux-amd64.tar.gz';
+        osName = 'Linux (x86_64)';
+      }
+
+      const match = assets.find(a => a.name.includes(targetPattern));
+      const btn = document.getElementById('btn-smart-download');
+      const label = document.getElementById('smart-download-text');
+
+      if (match) {
+        btn.href = match.browser_download_url;
+        label.innerText = `Download for ${osName}`;
+      }
+    }
+
+    // Fetch live data from GitHub API
+    async function fetchGitHubData() {
+      try {
+        // 1. Fetch Repository Info (stars, forks, commit)
+        const repoRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}`);
+        if (repoRes.ok) {
+          const repoData = await repoRes.json();
+          document.getElementById('stat-stars').innerText = repoData.stargazers_count || 0;
+        }
+
+        // 2. Fetch Latest Commit
+        const commitRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/commits/main`);
+        if (commitRes.ok) {
+          const commitData = await commitRes.json();
+          const shortSha = commitData.sha.substring(0, 7);
+          document.getElementById('stat-commit').innerText = shortSha;
+          document.getElementById('stat-commit').title = commitData.commit.message;
+        }
+
+        // 3. Fetch Latest Release Assets
+        const releaseRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`);
+        if (releaseRes.ok) {
+          const releaseData = await releaseRes.json();
+          const tagName = releaseData.tag_name || FALLBACK_VERSION;
+          
+          document.getElementById('nav-version').innerText = tagName;
+          document.getElementById('stat-version').innerText = tagName;
+          document.getElementById('table-version-tag').innerText = `${tagName} Latest`;
+          document.getElementById('pill-release-text').innerText = `Live Release: ${tagName} on GitHub`;
+          
+          const pubDate = new Date(releaseData.published_at).toLocaleDateString('en-US', {
+            year: 'numeric', month: 'short', day: 'numeric'
+          });
+          document.getElementById('release-meta-text').innerText = `Published ${pubDate} · ${releaseData.assets.length} binary distributions`;
+
+          // Populate Table
+          const tbody = document.getElementById('assets-table-body');
+          tbody.innerHTML = '';
+
+          releaseData.assets.forEach(asset => {
+            const meta = getPlatformMeta(asset.name);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>
+                <span class="file-name">
+                  <span>${meta.icon}</span>
+                  <span>${asset.name}</span>
+                </span>
+              </td>
+              <td><span class="badge-os">${meta.label}</span></td>
+              <td style="font-family:var(--font-mono); color:var(--text-muted); font-size:0.85rem;">${formatBytes(asset.size)}</td>
+              <td>
+                <a href="${asset.browser_download_url}" class="btn-download-sm">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download
+                </a>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+
+          // Set up smart OS download
+          setupSmartDownload(releaseData.assets);
+        }
+      } catch (err) {
+        console.warn('GitHub API fetch failed (likely rate limited or offline), using cached fallback.', err);
+        document.getElementById('sync-label').innerText = 'Cached v0.1.0 Mode';
+      }
+    }
+
+    // Run on load
+    document.addEventListener('DOMContentLoaded', fetchGitHubData);
+  </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "name": "hello_node",
+  "description": "Greet someone by name. A minimal Node.js tool: use it to check that tools written in JavaScript work.",
+  "parameters": { "type": "object", "properties": { "name": { "type": "string" } }, "required": ["name"], "additionalProperties": false },
+  "command": ["node", "hello.js"],
+  "output": "json"
+}

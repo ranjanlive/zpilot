@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>zagent</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header id="top">
+  <div class="title">
+    <span class="logo">z</span>
+    <div class="titles">
+      <div id="session-title" class="session-title">connecting…</div>
+      <div id="session-sub" class="session-sub"></div>
+    </div>
+  </div>
+  <div class="meter" id="meter" title="Context size now / compaction threshold">
+    <div class="meter-text"><span id="ctx-now">0</span><span class="dim"> ctx</span><span class="dim" id="ctx-limit"></span></div>
+    <div class="bar"><div id="ctx-bar"></div></div>
+    <div class="meter-totals dim" id="totals"></div>
+  </div>
+  <div class="status" id="status" data-state="idle"><span class="dot"></span><span id="status-text">idle</span></div>
+</header>
+
+<main id="log" aria-live="polite"></main>
+<button id="jump" class="jump" hidden>↓ latest</button>
+
+<div id="banner" class="banner" hidden></div>
+
+<footer id="composer">
+  <div id="chips" class="chips"></div>
+  <div class="row">
+    <label class="attach" title="Attach an image, audio, video or PDF">
+      <input id="file" type="file" multiple hidden>
+      <span>＋</span>
+    </label>
+    <textarea id="input" rows="1" placeholder="Message the agent…  (/help for commands)" autocomplete="off" spellcheck="true"></textarea>
+    <button id="send" class="primary">Send</button>
+    <button id="note" class="secondary" hidden>Send note</button>
+    <button id="stop" class="danger" hidden>Stop</button>
+    <button id="resume" class="secondary" hidden>Retry now</button>
+  </div>
+  <div class="hint dim" id="hint">Enter sends · Shift+Enter for a new line</div>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "image_maker",
+  "description": "Create a PNG image filled with a colour (and a darker diagonal stripe) and save it. A stand-in for a real image generator: it shows how a tool saves files and returns them to the model.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "color": { "type": "string", "description": "Hex colour such as #3366cc." },
+      "size": { "type": "integer", "description": "Width and height in pixels (default 128).", "minimum": 8, "maximum": 1024 }
+    },
+    "required": ["color"],
+    "additionalProperties": false
+  },
+  "command": ["python", "image_maker.py"],
+  "output": "json",
+  "attach_outputs": true,
+  "timeout_seconds": 60
+}

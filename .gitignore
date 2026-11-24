@@ -1,0 +1,13 @@
+# build output
+/dist/
+/bin/
+/zpilot
+*.exe
+# local runtime data and secrets
+.zpilot/
+/data/
+.env
+*.log
+# editor
+.vscode/
+.idea/
